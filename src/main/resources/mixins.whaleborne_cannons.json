@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "com.fruityspikes.whaleborne_cannons.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "mixins.whaleborne_cannons.refmap.json",
+  "mixins": [
+    "MixinCannonEntity"
+  ],
+  "client": [
+    "MixinCannonRenderer",
+    "MixinCannonModel",
+    "ICannonModelAccessor",
+    "ICannonMenuAccessor",
+    "MixinCannonMenu",
+    "MixinAbstractContainerMenu"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

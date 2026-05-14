@@ -1,0 +1,163 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.38'
+}
+
+group = 'com.fruityspikes.whaleborne_cannons'
+version = '1.0.0-1.20.1'
+
+base {
+    archivesName = 'whaleborne_yeet_cannonry-forge-1.20.1'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+mixin {
+    add sourceSets.main, "mixins.whaleborne_cannons.refmap.json"
+    config "mixins.whaleborne_cannons.json"
+    debug.export = true
+}
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
+            mods {
+                whaleborne_cannons {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
+            mods {
+                whaleborne_cannons {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'whaleborne_cannons', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+
+            mods {
+                whaleborne_cannons {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    mavenLocal()
+    maven {
+        url "https://cursemaven.com"
+        content { includeGroup "curse.maven" }
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.10'
+
+    // Whaleborne base mod (from CurseMaven)
+    implementation fg.deobf("curse.maven:whaleborne-1272075:7809002")
+
+    // Mixin annotation processor - MUST be configured correctly
+    compileOnly 'org.spongepowered:mixin:0.8.5'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version: '1.20.1',
+            minecraft_version_range: '[1.20.1, 1.21)',
+            forge_version: '47.2.0',
+            forge_version_range: '[47,)',
+            loader_version_range: '[47,)',
+            mod_id: 'whaleborne_cannons',
+            mod_name: 'Whaleborne Cannons',
+            mod_license: 'All Rights Reserved',
+            mod_version: '1.0.0',
+            mod_authors: 'FloofHips',
+            mod_description: 'Cannons addon for Whaleborne'
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    dependsOn 'createMcpToSrg'
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                "Specification-Title"     : "whaleborne_cannons",
+                "Specification-Vendor"    : "fruityspikes",
+                "Specification-Version"   : "1",
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.jar.archiveVersion,
+                "Implementation-Vendor"   : "fruityspikes",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "MixinConfigs": "mixins.whaleborne_cannons.json"
+        ])
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Un-reobf'd JAR for Mojmap dev runtimes (e.g. NeoForge ModDevGradle).
+tasks.register('devJar', Jar) {
+    dependsOn 'compileJava', 'processResources'
+
+    archiveBaseName.set(base.archivesName.get())
+    archiveClassifier.set('dev')
+    destinationDirectory.set(file('build/devlibs'))
+
+    from sourceSets.main.output
+    exclude 'mixins.whaleborne_cannons.refmap.json'
+
+    manifest {
+        attributes([
+                "Specification-Title"     : "whaleborne_cannons",
+                "Specification-Vendor"    : "fruityspikes",
+                "Specification-Version"   : "1",
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.jar.archiveVersion.get(),
+                "Implementation-Vendor"   : "fruityspikes",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "MixinConfigs"            : "mixins.whaleborne_cannons.json"
+        ])
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named('assemble').configure {
+    dependsOn 'devJar'
+}
