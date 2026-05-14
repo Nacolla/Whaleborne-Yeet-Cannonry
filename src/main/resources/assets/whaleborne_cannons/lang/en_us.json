@@ -1,0 +1,6 @@
+{
+  "item.whaleborne_cannons.cannon": "Cannon",
+  "entity.whaleborne_cannons.cannon": "Cannon",
+  "menu.title.whaleborne.cannon": "Cannon",
+  "message.whaleborne.cannon_full": "Cannon is occupied!"
+}

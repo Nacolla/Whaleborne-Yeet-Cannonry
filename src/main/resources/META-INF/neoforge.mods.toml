@@ -1,0 +1,38 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+issueTrackerURL="http://my.issue.tracker/"
+
+[[mods]]
+modId="whaleborne_yeet_cannonry"
+version="1.0.0"
+displayName="Whaleborne - Yeet Cannonry!"
+authors="Nacolla"
+credits="FloofHips"
+description='''
+Adds Human Cannonball functionality to Whaleborne via Mixins.
+'''
+
+[[dependencies.whaleborne_yeet_cannonry]]
+    modId="neoforge"
+    type="required"
+    versionRange="${neo_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.whaleborne_yeet_cannonry]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.whaleborne_yeet_cannonry]]
+    modId="whaleborne"
+    type="required"
+    versionRange="[1.0.0,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[mixins]]
+    config="mixins.whaleborne_cannons.json"
