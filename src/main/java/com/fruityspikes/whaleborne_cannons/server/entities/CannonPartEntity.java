@@ -45,6 +45,11 @@ public class CannonPartEntity extends PartEntity<CannonEntity> {
     }
 
     @Override
+    protected boolean canAddPassenger(Entity passenger) {
+        return false;
+    }
+
+    @Override
     public boolean hurt(DamageSource source, float amount) {
         return this.getParent().hurt(source, amount);
     }

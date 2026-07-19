@@ -2,6 +2,7 @@ package com.fruityspikes.whaleborne_cannons.mixin;
 
 import com.fruityspikes.whaleborne.server.entities.CannonEntity;
 import com.fruityspikes.whaleborne.server.entities.RideableWhaleWidgetEntity;
+import com.fruityspikes.whaleborne_cannons.compat.CarryOnCompat;
 import com.fruityspikes.whaleborne_cannons.server.entities.CannonPartEntity;
 import com.fruityspikes.whaleborne_cannons.server.entities.ICannonMultipart;
 import net.minecraft.nbt.CompoundTag;
@@ -329,7 +330,15 @@ public abstract class MixinCannonEntity extends RideableWhaleWidgetEntity implem
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return this.getPassengers().size() < 2;
+        return this.getPassengers().size() < 2 && passenger instanceof net.minecraft.world.entity.LivingEntity;
+    }
+
+    @Override
+    public void ejectPassengers() {
+        if (!this.level().isClientSide && whaleborne_cannons$getBarrelRider() != null) {
+            whaleborne_cannons$setBarrelRider(null);
+        }
+        super.ejectPassengers();
     }
 
     @Override
@@ -345,6 +354,23 @@ public abstract class MixinCannonEntity extends RideableWhaleWidgetEntity implem
     @Override
     public InteractionResult interactPart(CannonPartEntity part, Player player, Vec3 vec, InteractionHand hand) {
         if (part == this.whaleborne_cannons$barrel) {
+            if (CarryOnCompat.isLoaded() && player.isShiftKeyDown()) {
+                net.minecraft.world.entity.LivingEntity carried = CarryOnCompat.getCarriedPlayer(player);
+                if (carried != null) {
+                    if (!this.level().isClientSide) {
+                        if (whaleborne_cannons$getBarrelRider() != null || !this.inventory.getItem(0).isEmpty()) {
+                            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.whaleborne.cannon_full"), true);
+                        } else if (CarryOnCompat.stopCarrying((ServerPlayer) player)) {
+                            whaleborne_cannons$setBarrelRider(carried.getUUID());
+                            if (!(carried.startRiding(this, true) && carried.getVehicle() == this)) {
+                                carried.stopRiding();
+                                whaleborne_cannons$setBarrelRider(null);
+                            }
+                        }
+                    }
+                    return InteractionResult.SUCCESS;
+                }
+            }
             if (whaleborne_cannons$getBarrelRider() == null) {
                 if (!this.level().isClientSide) {
                     if (!this.inventory.getItem(0).isEmpty()) {
@@ -359,10 +385,32 @@ public abstract class MixinCannonEntity extends RideableWhaleWidgetEntity implem
                 if (!this.level().isClientSide) {
                     player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.whaleborne.cannon_full"), true);
                 }
-                return InteractionResult.FAIL;
+                return InteractionResult.CONSUME;
             }
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
+        if (CarryOnCompat.isLoaded() && player.isShiftKeyDown()) {
+            net.minecraft.world.entity.LivingEntity carried = CarryOnCompat.getCarriedPlayer(player);
+            if (carried != null) {
+                if (!this.level().isClientSide && this.getPassengers().size() < 2
+                        && CarryOnCompat.stopCarrying((ServerPlayer) player)) {
+                    Entity rider = null;
+                    UUID barrelRiderId = whaleborne_cannons$getBarrelRider();
+                    for (Entity p : getPassengers()) {
+                        if (barrelRiderId != null && p.getUUID().equals(barrelRiderId)) rider = p;
+                    }
+                    if (rider != null) rider.stopRiding();
+                    carried.startRiding(this, true);
+                    if (rider != null) rider.startRiding(this, true);
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
+        }
+        return super.interactAt(player, vec, hand);
     }
 
     /** Mounts a second player as gunner, re-seating them into passenger 0 because vanilla
