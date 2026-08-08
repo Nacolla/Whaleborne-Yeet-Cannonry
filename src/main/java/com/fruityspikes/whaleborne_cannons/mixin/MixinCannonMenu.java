@@ -17,7 +17,7 @@ public class MixinCannonMenu {
     private CannonEntity cannon;
 
     /** Prevents shift-clicking the phantom head out of slot 0 (would duplicate it). */
-    @Inject(method = "quickMoveStack", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "quickMoveStack", at = @At("HEAD"), cancellable = true)
     public void onQuickMoveStackReturn(Player player, int index, CallbackInfoReturnable<ItemStack> cir) {
         if (index == 0 && cannon instanceof ICannonRider cannonRider && cannonRider.getBarrelRider() != null) {
             cir.setReturnValue(ItemStack.EMPTY);
