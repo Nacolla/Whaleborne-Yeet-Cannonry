@@ -5,7 +5,7 @@ issueTrackerURL="http://my.issue.tracker/"
 
 [[mods]]
 modId="whaleborne_yeet_cannonry"
-version="1.0.0"
+version="${mod_version}"
 displayName="Whaleborne - Yeet Cannonry!"
 authors="Nacolla"
 credits="FloofHips"

@@ -28,13 +28,9 @@ public abstract class MixinAbstractContainerMenu {
 
             if (slot.container == accessor.getCannon().inventory && slot.getSlotIndex() == 0) {
                 if (accessor.getCannon() instanceof ICannonRider cannonRider && cannonRider.getBarrelRider() != null) {
-                    if (clickType == ClickType.PICKUP || clickType == ClickType.QUICK_MOVE ||
-                        clickType == ClickType.SWAP || clickType == ClickType.THROW ||
-                        clickType == ClickType.CLONE) {
-                        // Clearing slot 0 destroys the head and ejects the rider via containerChanged.
-                        slot.set(ItemStack.EMPTY);
-                        ci.cancel();
-                    }
+                    // Clearing slot 0 destroys the head and ejects the rider via containerChanged.
+                    slot.set(ItemStack.EMPTY);
+                    ci.cancel();
                 }
             }
         }

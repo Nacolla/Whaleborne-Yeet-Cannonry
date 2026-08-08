@@ -5,15 +5,15 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "mixins.whaleborne_cannons.refmap.json",
   "mixins": [
-    "MixinCannonEntity"
+    "MixinCannonEntity",
+    "ICannonMenuAccessor",
+    "MixinCannonMenu",
+    "MixinAbstractContainerMenu"
   ],
   "client": [
     "MixinCannonRenderer",
     "MixinCannonModel",
-    "ICannonModelAccessor",
-    "ICannonMenuAccessor",
-    "MixinCannonMenu",
-    "MixinAbstractContainerMenu"
+    "ICannonModelAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
